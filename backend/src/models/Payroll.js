@@ -10,12 +10,23 @@ const payrollSchema = new mongoose.Schema(
     month: Number,
     year: Number,
 
-    workingDays: Number,
-    presentDays: Number,
-    absentDays: Number,
+    // Attendance Summary
+    attendanceSummary: {
+      totalDays: { type: Number, default: 0 },
+      presentDays: { type: Number, default: 0 }, // Includes Half Days (0.5)
+      lopDays: { type: Number, default: 0 }, // Loss of Pay days
+    },
 
-    perDaySalary: Number,
-    payableSalary: Number,
+    // Financial Breakdown
+    breakdown: {
+      basic: Number,
+      hra: Number,
+      allowances: Number,
+      gross: Number,
+      deductions: Number, // Standard deductions
+      lopDeduction: Number, // Amount deducted for LOP
+      netSalary: Number,
+    },
 
     status: {
       type: String,

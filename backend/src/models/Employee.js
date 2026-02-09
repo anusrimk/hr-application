@@ -30,10 +30,29 @@ const employeeSchema = new mongoose.Schema(
       type: Date,
       required: [true, "Joining date is required"],
     },
-    salary: {
-      type: Number,
-      required: [true, "Salary is required"],
-      min: [0, "Salary cannot be negative"],
+    salaryStructure: {
+      basic: {
+        type: Number,
+        required: [true, "Basic salary is required"],
+        min: [0, "Basic salary cannot be negative"],
+      },
+      hra: {
+        type: Number,
+        default: 0,
+        min: [0, "HRA cannot be negative"],
+      },
+      allowances: [
+        {
+          name: { type: String, required: true },
+          amount: { type: Number, required: true, min: 0 },
+        },
+      ],
+      deductions: [
+        {
+          name: { type: String, required: true },
+          amount: { type: Number, required: true, min: 0 },
+        },
+      ],
     },
     status: {
       type: String,

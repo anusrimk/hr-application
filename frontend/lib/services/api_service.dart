@@ -32,7 +32,7 @@ class ApiService {
   }
 
   // GET request
-  static Future<Map<String, dynamic>> get(String endpoint) async {
+  static Future<dynamic> get(String endpoint) async {
     final headers = await _getHeaders();
     final response = await http.get(
       Uri.parse('$apiBaseUrl$endpoint'),
@@ -42,7 +42,7 @@ class ApiService {
   }
 
   // POST request
-  static Future<Map<String, dynamic>> post(
+  static Future<dynamic> post(
     String endpoint,
     Map<String, dynamic> body,
   ) async {
@@ -56,10 +56,7 @@ class ApiService {
   }
 
   // PUT request
-  static Future<Map<String, dynamic>> put(
-    String endpoint,
-    Map<String, dynamic> body,
-  ) async {
+  static Future<dynamic> put(String endpoint, Map<String, dynamic> body) async {
     final headers = await _getHeaders();
     final response = await http.put(
       Uri.parse('$apiBaseUrl$endpoint'),
@@ -70,7 +67,7 @@ class ApiService {
   }
 
   // DELETE request
-  static Future<Map<String, dynamic>> delete(String endpoint) async {
+  static Future<dynamic> delete(String endpoint) async {
     final headers = await _getHeaders();
     final response = await http.delete(
       Uri.parse('$apiBaseUrl$endpoint'),
@@ -80,7 +77,7 @@ class ApiService {
   }
 
   // Handle response
-  static Map<String, dynamic> _handleResponse(http.Response response) {
+  static dynamic _handleResponse(http.Response response) {
     final body = jsonDecode(response.body);
     if (response.statusCode >= 200 && response.statusCode < 300) {
       return body;

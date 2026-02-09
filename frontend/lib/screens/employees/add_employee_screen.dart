@@ -55,7 +55,12 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
       department: _departmentController.text.trim(),
       designation: _designationController.text.trim(),
       joiningDate: _joiningDate,
-      salary: double.parse(_salaryController.text.trim()),
+      salaryStructure: SalaryStructure(
+        basic: double.parse(_salaryController.text.trim()),
+        hra: 0,
+        allowances: [],
+        deductions: [],
+      ),
       status: 'ACTIVE',
     );
 
