@@ -61,7 +61,7 @@ export const getDailyAttendance = async (req, res) => {
 
   const attendanceList = await Attendance.find({
     date: { $gte: startOfDay, $lte: endOfDay },
-  });
+  }).populate("employeeId", "name designation department");
 
   res.json({ data: attendanceList });
 };

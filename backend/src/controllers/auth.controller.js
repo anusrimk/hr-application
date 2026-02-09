@@ -27,7 +27,7 @@ export const register = async (req, res, next) => {
       designation: designation || "Employee",
       joiningDate: new Date(),
       salary: 0, // To be set by HR
-      status: "INACTIVE",
+      status: "ACTIVE",
     });
 
     // Create user with link to employee

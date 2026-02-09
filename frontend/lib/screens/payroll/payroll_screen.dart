@@ -33,11 +33,25 @@ class _PayrollScreenState extends State<PayrollScreen> {
       final auth = context.read<AuthProvider>();
       final isAdmin = auth.user?.role == 'ADMIN' || auth.user?.role == 'HR';
 
+      if (!isAdmin &&
+          (auth.user?.employeeId == null || auth.user!.employeeId!.isEmpty)) {
+        if (mounted) {
+          setState(() {
+            _payrolls = [];
+            _isLoading = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('No employee record linked to this account.'),
+            ),
+          );
+        }
+        return;
+      }
+
       final data = isAdmin
           ? await PayrollService.getAllPayrollHistory()
-          : await PayrollService.getEmployeePayroll(
-              auth.user?.employeeId ?? '',
-            );
+          : await PayrollService.getEmployeePayroll(auth.user!.employeeId!);
 
       setState(() => _payrolls = data);
     } catch (e) {

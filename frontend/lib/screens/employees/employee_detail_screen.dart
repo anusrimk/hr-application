@@ -11,7 +11,8 @@ import '../../services/payroll_service.dart';
 import '../../config/theme.dart';
 
 class EmployeeDetailScreen extends StatefulWidget {
-  const EmployeeDetailScreen({super.key});
+  final Employee? employee;
+  const EmployeeDetailScreen({super.key, this.employee});
 
   @override
   State<EmployeeDetailScreen> createState() => _EmployeeDetailScreenState();
@@ -24,9 +25,11 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final args = ModalRoute.of(context)?.settings.arguments;
-    if (args is Employee) {
-      _payrollHistoryFuture = PayrollService.getEmployeePayroll(args.id);
+    final employee =
+        widget.employee ??
+        ModalRoute.of(context)?.settings.arguments as Employee?;
+    if (employee != null) {
+      _payrollHistoryFuture = PayrollService.getEmployeePayroll(employee.id);
     }
   }
 
@@ -96,7 +99,6 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
                   'department': departmentController.text,
                   'designation': designationController.text,
                   'status': status,
-                  // Salary is managed in Salary Tab
                 });
 
                 if (success) {
@@ -118,19 +120,24 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final args = ModalRoute.of(context)?.settings.arguments;
-    if (args is! Employee)
+    final argEmployee =
+        widget.employee ??
+        ModalRoute.of(context)?.settings.arguments as Employee?;
+    // Handle case where route args might not be Employee or null
+    final targetEmployee =
+        argEmployee ??
+        (ModalRoute.of(context)?.settings.arguments as Employee?);
+
+    if (targetEmployee == null)
       return const Scaffold(
         body: Center(child: Text('Error: No employee selected')),
       );
 
-    final argEmployee = args;
-
     return Consumer2<AuthProvider, EmployeeProvider>(
       builder: (context, auth, employeeProvider, _) {
         final employee = employeeProvider.employees.firstWhere(
-          (e) => e.id == argEmployee.id,
-          orElse: () => argEmployee,
+          (e) => e.id == targetEmployee.id,
+          orElse: () => targetEmployee,
         );
 
         final role = auth.user?.role ?? '';
@@ -141,21 +148,37 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
           child: Scaffold(
             appBar: AppBar(
               title: Text(employee.name),
+              // Only show back button if pushed (not if it's main profile tab)
+              automaticallyImplyLeading: !Navigator.of(context).canPop()
+                  ? true
+                  : true, // Standard behavior
+              leading: widget.employee != null
+                  ? const SizedBox.shrink()
+                  : null, // Hide back button if embedded in tab
+              centerTitle: true, // Center title if no back button
               bottom: TabBar(
                 tabs: [
                   const Tab(text: 'Overview'),
                   if (isAdmin) const Tab(text: 'Payroll & Salary'),
                 ],
               ),
-              actions: isAdmin
-                  ? [
-                      IconButton(
-                        icon: const Icon(Icons.edit),
-                        onPressed: () =>
-                            _showEditProfileDialog(context, employee),
-                      ),
-                    ]
-                  : null,
+              actions: [
+                if (isAdmin)
+                  IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: () => _showEditProfileDialog(context, employee),
+                  ),
+                // If viewing own profile (via Tab), show Logout
+                if (widget.employee != null)
+                  IconButton(
+                    icon: const Icon(Icons.logout),
+                    onPressed: () async {
+                      await context.read<AuthProvider>().logout();
+                      if (context.mounted)
+                        Navigator.pushReplacementNamed(context, '/login');
+                    },
+                  ),
+              ],
             ),
             body: TabBarView(
               children: [
@@ -178,10 +201,8 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          // Profile Header
           _buildProfileHeader(context, employee),
           const SizedBox(height: 16),
-          // Info Cards
           _buildInfoCard(context, 'Personal Information', [
             _buildInfoRow('Email', employee.email, Icons.email_outlined),
           ]),
@@ -200,7 +221,6 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
             ),
           ]),
           const SizedBox(height: 12),
-          // Salary Summary (Read Only here)
           _buildInfoCard(context, 'Current Salary', [
             _buildInfoRow(
               'Gross Salary',
@@ -221,6 +241,10 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
       ),
     );
   }
+
+  // ... rest of the file (header, payroll tab, helpers) ...
+  // To save tokens, I will omit re-writing unchanged methods if I can use replace/insert, but write_to_file replaces all.
+  // I MUST include all methods.
 
   Widget _buildProfileHeader(BuildContext context, Employee employee) {
     return Card(
@@ -252,7 +276,6 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
               style: TextStyle(color: AppTheme.textSecondary),
             ),
             const SizedBox(height: 8),
-            // Today's Attendance Logic (Same as before)
             FutureBuilder<List<Attendance>>(
               future: AttendanceService.getEmployeeAttendance(employee.id),
               builder: (context, snapshot) {
@@ -492,8 +515,6 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
   }
 
   void _showEditSalaryDialog(BuildContext context, Employee employee) {
-    // This would be a more complex dialog with dynamic lists for allowances
-    // For MVP, simplify to Basic + HRA editing.
     final basicController = TextEditingController(
       text: employee.salaryStructure.basic.toString(),
     );
@@ -535,8 +556,7 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
               final newStructure = SalaryStructure(
                 basic: double.tryParse(basicController.text) ?? 0,
                 hra: double.tryParse(hraController.text) ?? 0,
-                allowances:
-                    employee.salaryStructure.allowances, // Keep existing
+                allowances: employee.salaryStructure.allowances,
                 deductions: employee.salaryStructure.deductions,
               );
 
@@ -545,12 +565,9 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
                   employee.id,
                   newStructure,
                 );
-                // Refresh employee
                 if (ctx.mounted) {
                   Navigator.pop(ctx);
-                  ctx
-                      .read<EmployeeProvider>()
-                      .fetchEmployees(); // Refresh list to update detail view
+                  ctx.read<EmployeeProvider>().fetchEmployees();
                   ScaffoldMessenger.of(ctx).showSnackBar(
                     const SnackBar(content: Text('Salary structure updated!')),
                   );

@@ -8,11 +8,10 @@ export const getOverview = async () => {
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
 
-  // 1. Get all ACTIVE employee IDs (Base for calculation)
-  // We only track attendance for Active employees
-  const activeEmployees = await Employee.find({ status: "ACTIVE" }).select(
-    "_id",
-  );
+  // 1. Get all eligible employee IDs (Active + Inactive, exclude Terminated)
+  const activeEmployees = await Employee.find({
+    status: { $in: ["ACTIVE", "INACTIVE"] },
+  }).select("_id");
   const activeEmployeeIds = new Set(
     activeEmployees.map((e) => e._id.toString()),
   );
