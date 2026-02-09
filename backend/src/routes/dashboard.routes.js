@@ -7,7 +7,7 @@ const router = Router();
 // All routes require authentication
 router.use(authMiddleware);
 
-// Only ADMIN and HR can view company-wide dashboard
-router.get("/overview", requireRole("ADMIN", "HR"), controller.getOverview);
+// View company-wide dashboard (All roles)
+router.get("/overview", controller.getOverview);
 
 export default router;

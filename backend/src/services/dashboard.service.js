@@ -44,9 +44,8 @@ export const getOverview = async () => {
     }
   });
 
-  // 4. Calculate Unmarked
-  // Unmarked = Total Active - Count of Active Employees with ANY record today
-  const unmarked = totalActive - markedIds.size;
+  // 4. Return Stats
+  // 'onLeave' now effectively includes Absents (default state) + Leaves
 
   // Also keep Pending Leaves count if needed elsewhere,
   // but for the card we will send 'unmarked'
@@ -61,8 +60,7 @@ export const getOverview = async () => {
     // But for attendance logic, we usually care about active.
     // Let's keep it as Total Count of collection as explicitly requested.
     presentToday,
-    onLeave,
-    unmarked, // This is the new metric
-    pendingLeaves, // Keeping for backward compatibility if needed
+    onLeave, // Includes ABSENT and LEAVE statuses
+    pendingLeaves,
   };
 };

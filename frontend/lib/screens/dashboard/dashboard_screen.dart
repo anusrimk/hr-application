@@ -146,11 +146,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           '${dashboard.stats['totalEmployees'] ?? 0}',
                           Icons.people,
                           AppTheme.primaryColor,
-                          onTap: () => Navigator.pushNamed(
-                            context,
-                            '/attendance',
-                            arguments: {'filter': 'TOTAL'},
-                          ),
+                          onTap: () =>
+                              Navigator.pushNamed(
+                                context,
+                                '/attendance',
+                                arguments: {'filter': 'TOTAL'},
+                              ).then(
+                                (_) => context
+                                    .read<DashboardProvider>()
+                                    .fetchStats(),
+                              ),
                         ),
                         _buildStatCard(
                           context,
@@ -158,11 +163,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           '${dashboard.stats['presentToday'] ?? 0}',
                           Icons.check_circle,
                           AppTheme.accentColor,
-                          onTap: () => Navigator.pushNamed(
-                            context,
-                            '/attendance',
-                            arguments: {'filter': 'PRESENT'},
-                          ),
+                          onTap: () =>
+                              Navigator.pushNamed(
+                                context,
+                                '/attendance',
+                                arguments: {'filter': 'PRESENT'},
+                              ).then(
+                                (_) => context
+                                    .read<DashboardProvider>()
+                                    .fetchStats(),
+                              ),
                         ),
                         _buildStatCard(
                           context,
@@ -170,23 +180,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           '${dashboard.stats['onLeave'] ?? 0}',
                           Icons.event_busy,
                           AppTheme.errorColor,
-                          onTap: () => Navigator.pushNamed(
-                            context,
-                            '/attendance',
-                            arguments: {'filter': 'ON_LEAVE'},
-                          ),
-                        ),
-                        _buildStatCard(
-                          context,
-                          'Unmarked',
-                          '${dashboard.stats['unmarked'] ?? 0}',
-                          Icons.assignment_late_outlined,
-                          AppTheme.warningColor,
-                          onTap: () => Navigator.pushNamed(
-                            context,
-                            '/attendance',
-                            arguments: {'filter': 'UNMARKED'},
-                          ),
+                          onTap: () =>
+                              Navigator.pushNamed(
+                                context,
+                                '/attendance',
+                                arguments: {'filter': 'ON_LEAVE'},
+                              ).then(
+                                (_) => context
+                                    .read<DashboardProvider>()
+                                    .fetchStats(),
+                              ),
                         ),
                       ],
                     ),
@@ -208,7 +211,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ? 'Add, view, and edit employees'
                         : 'View employee directory',
                     Icons.person_add,
-                    () => Navigator.pushNamed(context, '/employees'),
+                    () => Navigator.pushNamed(context, '/employees').then(
+                      (_) => context.read<DashboardProvider>().fetchStats(),
+                    ),
                   ),
 
                   // Mark Attendance -> Self Check-in for ALL
@@ -217,7 +222,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     'Mark Attendance',
                     'Record your daily attendance',
                     Icons.how_to_reg,
-                    () => Navigator.pushNamed(context, '/check-in'),
+                    () => Navigator.pushNamed(context, '/check-in').then(
+                      (_) => context.read<DashboardProvider>().fetchStats(),
+                    ),
                   ),
 
                   _buildActionTile(
