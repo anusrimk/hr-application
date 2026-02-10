@@ -18,22 +18,18 @@ const employeeSchema = new mongoose.Schema(
     },
     department: {
       type: String,
-      required: [true, "Department is required"],
       trim: true,
     },
     designation: {
       type: String,
-      required: [true, "Designation is required"],
       trim: true,
     },
     joiningDate: {
       type: Date,
-      required: [true, "Joining date is required"],
     },
     salaryStructure: {
       basic: {
         type: Number,
-        required: [true, "Basic salary is required"],
         min: [0, "Basic salary cannot be negative"],
       },
       hra: {
